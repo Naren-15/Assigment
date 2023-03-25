@@ -20,19 +20,20 @@ phases:
       - export KUBECONFIG=~/.kube/config
       - echo Entered the pre_build phase...
       # Docker Image Tag with Date Time & Code Buiild Resolved Source Version
-      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      # Update Image tag in our Kubernetes Deployment Manifest        
+  #   - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      # Update Image tag in our Kubernetes Deployment Manifest   
+      - export TAG=$(date +%Y-%m-%d_%H-%M-%S)     
       - echo "Update Image tag in kube-manifest..."
-      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG"'@' kubernetes-manifests/deployment-svc.yaml
+      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG"'@' kubernetes-manifests/deployment-svc.yaml
       - echo Logging in to Amazon ECR...
       - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o5z7i6s7
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG src/
+      - docker build -t $IMAGE_REPO_NAME:$TAG src/
       - docker images
-      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker tag $IMAGE_REPO_NAME:$TAG public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG
 
   post_build:
     commands:
@@ -40,7 +41,7 @@ phases:
       - echo Entered the post_build phase...
       - echo Pushing the Docker image...
       - docker images
-      - docker push public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG 
+      - docker push public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG 
       # Extracting AWS Credential Information using STS Assume Role for kubectl
       - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"          
       - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
