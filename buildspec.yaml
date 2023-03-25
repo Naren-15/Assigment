@@ -20,9 +20,9 @@ phases:
       - export KUBECONFIG=~/.kube/config
       - echo Entered the pre_build phase...
       # Docker Image Tag with Date Time & Code Buiild Resolved Source Version
-  #   - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      # Update Image tag in our Kubernetes Deployment Manifest   
-      - export TAG=$(date +%Y-%m-%d_%H-%M-%S)     
+      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      - echo $TAG
+      # Update Image tag in our Kubernetes Deployment Manifest    
       - echo "Update Image tag in kube-manifest..."
       - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG"'@' kubernetes-manifests/deployment-svc.yaml
       - echo Logging in to Amazon ECR...
