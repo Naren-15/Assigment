@@ -24,7 +24,7 @@ phases:
       - echo $TAG
       # Update Image tag in our Kubernetes Deployment Manifest    
       - echo "Update Image tag in kube-manifest..."
-      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG"'@' kubernetes-manifests/deployment-svc.yaml
+      - sed -i 's@DOCKER_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$TAG"'@' kubernetes-manifests/deployment-svc.yaml
       - echo Logging in to Amazon ECR...
       - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o5z7i6s7
   build:

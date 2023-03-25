@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: nodejs-cont
-          image: ADSERVICE_IMAGE
+          image: DOCKER_IMAGE
           ports:
           - containerPort: 3000
       restartPolicy: Always 
