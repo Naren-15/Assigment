@@ -1,0 +1,56 @@
+version: 0.2
+
+phases: 
+  install: 
+    commands: 
+      - echo Installing app dependencies...
+      - curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.15.10/2020-02-22/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+      - echo 'export PATH=$PATH:$HOME/bin' >> ~/.bashrc
+      - source ~/.bashrc
+      - echo 'Check kubectl version' 
+      - kubectl version --short --client
+      # Verify AWS CLI Version        
+      - echo "Verify AWS CLI Version..."
+      - aws --version
+
+  pre_build:
+    commands:
+      - export KUBECONFIG=~/.kube/config
+      - echo Entered the pre_build phase...
+      # Docker Image Tag with Date Time & Code Buiild Resolved Source Version
+      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      # Update Image tag in our Kubernetes Deployment Manifest        
+      - echo "Update Image tag in kube-manifest..."
+      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG"'@' kubernetes-manifests/adservice.yaml
+      - echo Logging in to Amazon ECR...
+      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o5z7i6s7
+
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG src/adservice/
+      - docker images
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG
+
+  post_build:
+    commands:
+      - echo Build started on `date`
+      - echo Entered the post_build phase...
+      - echo Pushing the Docker image...
+      - docker images
+      - docker push public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG 
+      # Extracting AWS Credential Information using STS Assume Role for kubectl
+      - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"          
+      - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_KUBECTL_ROLE_ARN --role-session-name codebuild-kubectl --duration-seconds 900)
+      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
+      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
+      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
+      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
+      # Setup kubectl with our EKS Cluster              
+      - echo Logging in to Amazon EKS...
+      - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION  --name $AWS_CLUSTER_NAME
+      - docker images
+      - kubectl apply -f kubernetes-manifests/adservice.yaml

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: assigment-pod
+  namespace: default
+  labels:
+    app: nodejs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nodejs
+  template:
+    metadata:
+      labels:
+        app: nodejs
+    spec:
+      containers:
+        - name: nodejs-cont
+          image: hopeuser/assignment:latest
+          imagePullPolicy: Always
+          ports:
+          - containerPort: 3000
+      restartPolicy: Always 
+---
+apiVersion: v1 
+kind: Service
+metadata:
+  name: assignment-svc
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: nodejs
+  ports:
+    - port: 80
+      targetPort: 3000
+      protocol: TCP
