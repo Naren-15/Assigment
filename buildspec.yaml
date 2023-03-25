@@ -52,4 +52,6 @@ phases:
       - echo Logging in to Amazon EKS...
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION  --name $AWS_CLUSTER_NAME
       - docker images
-      - kubectl apply -f kubernetes-manifests/deployment-svc.yaml 
+      - kubectl delete -f kubernetes-manifests/deployment-svc.yaml 
+      - docker images
+      - kubectl apply -f kubernetes-manifests/deployment-svc.yaml
