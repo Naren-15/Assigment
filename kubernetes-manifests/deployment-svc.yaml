@@ -17,8 +17,7 @@ spec:
     spec:
       containers:
         - name: nodejs-cont
-          image: hopeuser/assignment:latest
-          imagePullPolicy: Always
+          image: ADSERVICE_IMAGE
           ports:
           - containerPort: 3000
       restartPolicy: Always 

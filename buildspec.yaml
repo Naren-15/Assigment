@@ -23,15 +23,14 @@ phases:
       - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
       # Update Image tag in our Kubernetes Deployment Manifest        
       - echo "Update Image tag in kube-manifest..."
-      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG"'@' kubernetes-manifests/adservice.yaml
+      - sed -i 's@ADSERVICE_IMAGE@'"public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG"'@' kubernetes-manifests/deployment-svc.yaml
       - echo Logging in to Amazon ECR...
       - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/o5z7i6s7
-
   build:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
-      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG src/adservice/
+      - docker build -t $IMAGE_REPO_NAME:$IMAGE_TAG src/
       - docker images
       - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG public.ecr.aws/o5z7i6s7/$IMAGE_REPO_NAME:$IMAGE_TAG
 
@@ -53,4 +52,4 @@ phases:
       - echo Logging in to Amazon EKS...
       - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION  --name $AWS_CLUSTER_NAME
       - docker images
-      - kubectl apply -f kubernetes-manifests/adservice.yaml
+      - kubectl apply -f kubernetes-manifests/deployment-svc.yaml 
