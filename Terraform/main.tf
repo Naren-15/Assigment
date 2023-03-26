@@ -51,7 +51,7 @@ resource "aws_route_table" "rtpub" {
   vpc_id = aws_vpc.myvpc.id
 
   route {
-    cidr_block = "0.0.0.0"
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.tigw.id
   }
   tags = {
@@ -62,7 +62,7 @@ resource "aws_route_table" "rtpvt" {
   vpc_id = aws_vpc.myvpc.id
 
   route {
-    cidr_block = "0.0.0.0"
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_nat_gateway.tnat.id
   }
   tags = {
@@ -124,11 +124,11 @@ resource "aws_security_group" "pvtsec" {
   vpc_id      = aws_vpc.myvpc.id
 
   ingress {
-    description      = "https"
-    from_port        = 443
-    to_port          = 443
+    description      = "all"
+    from_port        = 0
+    to_port          = 65525
     protocol         = "tcp"
-    cidr_blocks      = ["0.0.0.0/0"]
+    cidr_blocks      = ["aws_security_group.pubsec.id"]
   #  ipv6_cidr_blocks = [aws_vpc.main.ipv6_cidr_block]
   }
 
