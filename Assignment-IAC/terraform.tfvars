@@ -1,5 +1,5 @@
-aws_access_key = "AKIASD2SPQXE22TWSR7N"
-aws_secret_key = "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"
+aws_access_key = ""
+aws_secret_key = ""
 
 region                   = "ap-south-1"
 availability_zones_count = 2
