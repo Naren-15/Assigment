@@ -5,7 +5,7 @@ var express = require('express');
 var app = module.exports = express()
 
 app.get('/', function(req, res){
-  res.send('Hello Team, this is assigment for Junior DevOps Engineer ');
+  res.send('Hello World ');
 });
 
 /* istanbul ignore next */
